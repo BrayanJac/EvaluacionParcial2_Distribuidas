@@ -1,4 +1,17 @@
-const transactionService = require('../services/transaction.monolith.service');
+const TransactionService = require('../services/transaction.service');
+const AccountStateService = require('../services/account.state.service');
+const FinancialValidationService = require('../services/financial.validation.service');
+const NotificationService = require('../services/notification.service');
+
+// Inyección de dependencias (DIP)
+const accountStateService = new AccountStateService();
+const financialValidationService = new FinancialValidationService(accountStateService);
+const notificationService = new NotificationService();
+const transactionService = new TransactionService(
+  financialValidationService,
+  accountStateService,
+  notificationService
+);
 
 /**
  * Endpoint para ejecutar una transferencia bancaria (Beta).
@@ -20,7 +33,7 @@ function executeTransfer(req, res) {
     const result = transactionService.executeTransfer(fromAccountId, toAccountId, Number(amount));
     return res.status(200).json(result);
   } catch (error) {
-    // Si la validación o deducción falla en el monolito, se maneja como error bad request.
+    // Si la validación o deducción falla, se maneja como error bad request.
     return res.status(400).json({
       error: 'Error en la transacción',
       message: error.message
@@ -29,5 +42,6 @@ function executeTransfer(req, res) {
 }
 
 module.exports = {
-  executeTransfer
+  executeTransfer,
+  transactionService
 };

@@ -1,4 +1,17 @@
-const transactionService = require('../services/transaction.monolith.service');
+const TransactionService = require('../services/transaction.service');
+const AccountStateService = require('../services/account.state.service');
+const FinancialValidationService = require('../services/financial.validation.service');
+const NotificationService = require('../services/notification.service');
+
+// Inyección de dependencias (DIP)
+const accountStateService = new AccountStateService();
+const financialValidationService = new FinancialValidationService(accountStateService);
+const notificationService = new NotificationService();
+const transactionService = new TransactionService(
+  financialValidationService,
+  accountStateService,
+  notificationService
+);
 
 /**
  * Endpoint para obtener el saldo actual de una cuenta (Alpha).
